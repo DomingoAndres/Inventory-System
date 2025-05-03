@@ -36,7 +36,7 @@ public class CategoryController {
     public ResponseEntity<Category> saveCategory(@RequestBody Category newCategory){
 
         Category category = categoryService.save(newCategory);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
+        return ResponseEntity.status(HttpStatus.CREATED).body(category);
     }
 
     @GetMapping("/{id}")
@@ -70,5 +70,6 @@ public class CategoryController {
             return ResponseEntity.notFound().build();
         }
     }
+
 
 }

@@ -33,5 +33,14 @@ public class ProductService {
          productRepository.deleteById(id);
     }
 
+    public double totalValue(Long id){
+        
+        Product productSearched = productRepository.findById(id).orElseThrow(()-> new RuntimeException("Product not found."));
+
+        return productSearched.getStock() * productSearched.getPrice();
+    }
+
+    
+
 
 }
