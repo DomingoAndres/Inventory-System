@@ -1,6 +1,5 @@
 package com.estudio.inventory_system.service;
 
-import java.util.Date;
 import java.util.List;
 
 
@@ -130,16 +129,40 @@ public class CategoryService {
                 productRepository.save(product);
     
                 InventoryMovement adjustMovement = new InventoryMovement();
-    
-                adjustMovement.setProduct(product);
-                adjustMovement.setQuantity(diference);
-                adjustMovement.setType("AJUSTE");
-                adjustMovement.setDate(new Date());
+
+                adjustMovement.createInvMov(product, diference, "AJUSTE");
     
                 inventoryMovementRepository.save(adjustMovement);
             }
 
         }
+    }
+
+    public void stockIncrement(Long id, int cantidad){
+        Category categoryToIncrement = categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not found."));
+        
+        List<Product> products = categoryToIncrement.getProducts();
+
+        int newStock;
+
+        
+        for(Product product : products){
+            if(product.isActive()){
+                newStock = product.getStock() + cantidad;
+                product.setStock(newStock);
+                productRepository.save(product);
+
+
+                InventoryMovement incrementMovement = new InventoryMovement();
+
+                incrementMovement.createInvMov(product, newStock, "INCREMENTO");
+
+                inventoryMovementRepository.save(incrementMovement);
+            }    
+        }
+
+
+
     }
     
 

@@ -35,4 +35,12 @@ public class InventoryMovement {
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+
+    public void createInvMov(Product product, int quantity, String type){
+
+        this.product = product;
+        this.quantity = quantity;
+        this.type = type;
+        this.date = new Date();
+    }
 }
