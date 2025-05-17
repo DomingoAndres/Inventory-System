@@ -10,6 +10,7 @@ import com.estudio.inventory_system.repository.ProductRepository;
 
 import jakarta.transaction.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 import com.estudio.inventory_system.model.Product;
@@ -59,6 +60,54 @@ public class InventoryMovementService {
             return inventoryMovementRepository.save(inventoryMovement);
         }
         throw new RuntimeException("Product not found");
+    }
+
+
+    //transferencia de stock de un producto a otro
+    //stock minimo para transferir no existe
+    //alguno de los productos no existe
+
+
+    //id producto fuente y destino, cantidad que se va a mover
+
+    //metodo de transferencia: recibe id producto fuente, id producto destino y su cantidad
+
+    public void transferStock(Long idSourceProduct, Long idTargetProduct, int quantity){
+        
+        Product sourceProduct = productRepository.findById(idSourceProduct).get();
+        
+        Product targetProduct = productRepository.findById(idTargetProduct).get();
+
+        if(sourceProduct.getStock() < quantity){
+            throw new RuntimeException("Not enought stock in the source product");
+        }
+
+        //Movimiento de salida
+
+        InventoryMovement exitMovement = new InventoryMovement();
+
+        exitMovement.setProduct(sourceProduct);
+        exitMovement.setQuantity(quantity);
+        exitMovement.setType("SALIDA");
+        exitMovement.setDate(new Date());
+        sourceProduct.setStock(sourceProduct.getStock() - quantity);
+
+        //Movimiento de entrada
+
+        InventoryMovement entryMovement = new InventoryMovement();
+
+        entryMovement.setProduct(targetProduct);
+        entryMovement.setQuantity(quantity);
+        entryMovement.setType("ENTRADA");
+        entryMovement.setDate(new Date());
+        targetProduct.setStock(targetProduct.getStock() + quantity);
+
+        //guardar productos y movimientos
+
+        inventoryMovementRepository.save(exitMovement);
+        inventoryMovementRepository.save(entryMovement);
+        productRepository.save(targetProduct);
+        productRepository.save(sourceProduct);
     }
 
 
