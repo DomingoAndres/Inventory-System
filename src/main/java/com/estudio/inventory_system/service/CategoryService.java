@@ -1,5 +1,6 @@
 package com.estudio.inventory_system.service;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -162,6 +163,66 @@ public class CategoryService {
         }
 
 
+
+    }
+
+    public boolean transferProductStock(Long idCategory, Long idSourceProduct, Long idTargetProduct, int quantity){
+        
+        
+        Category categorySearched = categoryRepository.findById(idCategory).orElseThrow(() -> new RuntimeException("Category not found"));
+
+        List<Product> products = categorySearched.getProducts();
+
+        Product sourceProduct = productRepository.findById(idSourceProduct).get();
+
+        Product targeProduct = productRepository.findById(idTargetProduct).get();
+
+        boolean sourceExist = false;
+        
+        boolean targetExist = false;
+
+        for(Product product : products){
+            if(product.getId() == sourceProduct.getId() && product.isActive()){
+
+                sourceExist = true;
+            }
+
+            if(product.getId() == targeProduct.getId() && product.isActive()){
+
+                targetExist = true;
+            }
+        }
+
+        if(!sourceExist || !targetExist){
+            //throw new RuntimeException("Products not founds.");
+            return false;
+        }
+
+        if(sourceProduct.getStock() < quantity){
+            //throw new RuntimeException("Sorce product have not enought stock for the transfer.");
+            return false;
+        }
+
+        sourceProduct.setStock(sourceProduct.getStock() - quantity);
+
+        targeProduct.setStock(targeProduct.getStock() + quantity);
+
+        productRepository.save(sourceProduct);
+        productRepository.save(targeProduct);
+
+
+        //MOVIMIENTOS DE INVENTARO
+        
+        InventoryMovement transferExitMovement = new InventoryMovement();
+        InventoryMovement transferEntryMovement = new InventoryMovement();
+
+        transferExitMovement.createInvMov(sourceProduct, quantity, "TRANSFERENCIA DE SALIDA");
+        transferEntryMovement.createInvMov(targeProduct, quantity, "TRANSFERENCIA DE ENTRADA");
+
+        inventoryMovementRepository.save(transferEntryMovement);
+        inventoryMovementRepository.save(transferExitMovement);
+
+        return true;
 
     }
     
